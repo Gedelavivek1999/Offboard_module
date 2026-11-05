@@ -21,17 +21,18 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Your Name',
-    maintainer_email='your.email@example.com',
+    maintainer='vivek',
+    maintainer_email='gedelavivek@gmail.com',
     description='PX4 Offboard Control with Teleop',
     license='BSD',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'position_offboard_control.py = px4_offboard.position_offboard_control:main', 
-            'teleop_keyboard.py = px4_offboard.teleop_keyboard:main',
-            'velocity_offboard_control.py = px4_offboard.velocity_offboard_control:main', 
-            'teleop_joystick.py = px4_offboard.teleop_joystick:main',
+            'position_offboard_control.py = px4_offboard.position_offboard_control:main',  #offboard_module
+            'keyboard.py = px4_offboard.teleop_keyboard:main',       #keyboard one
+            'velocity_offboard_control.py = px4_offboard.velocity_offboard_control:main',   #Trajectory
+            
+            
         ],
     },
 )

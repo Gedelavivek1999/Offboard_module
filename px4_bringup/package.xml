@@ -4,7 +4,7 @@
   <name>px4_bringup</name>
   <version>0.0.1</version>
   <description>Complete bringup package for PX4 with ROS2</description>
-  <maintainer email="kutkarsh706@gmail.com">Utkarsh</maintainer>
+  <maintainer email="gedelavivek@gmail.com">Utkarsh</maintainer>
   <license>BSD</license>
 
   <depend>rclpy</depend>

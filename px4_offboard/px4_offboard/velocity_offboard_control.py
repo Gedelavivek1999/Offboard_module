@@ -16,7 +16,7 @@ from std_msgs.msg import Bool
 
 SETPOINT_RATE_HZ = 50.0
 SETPOINT_WARMUP_COUNT = 30
-INACTIVITY_TIMEOUT = 5.0  # seconds
+INACTIVITY_TIMEOUT = 5.0  # 5sec
 VEL_LIMIT_XY = 3.0
 VEL_LIMIT_Z = 2.0
 YAW_RATE_LIMIT = 2.0
@@ -60,7 +60,7 @@ class PX4Offboard(Node):
         self.create_timer(1.0 / SETPOINT_RATE_HZ, self.loop)
         self.get_logger().info("PX4 Offboard Teleop Node initialized.")
 
-    # -------------------- Callbacks --------------------
+    # calling
     def status_cb(self, msg):
         self.status = msg
 
@@ -79,7 +79,7 @@ class PX4Offboard(Node):
         self.vz = max(-VEL_LIMIT_Z, min(VEL_LIMIT_Z, msg.linear.z))
         self.yawspeed = max(-YAW_RATE_LIMIT, min(YAW_RATE_LIMIT, msg.angular.z))
 
-        # Start offboard mode on first velocity command (if armed)
+       # will strt offboard mode if armed 
         if not self.warmed_up and self.armed:
             self.start_offboard()
 
@@ -87,7 +87,7 @@ class PX4Offboard(Node):
         """Handle external arm/disarm command"""
         if msg.data and not self.armed:
             self.get_logger().info("ARM command received")
-            self.start_offboard()  # Prepare offboard mode
+            self.start_offboard()  # init offboard mode 
             time.sleep(0.2)
             self.publish_cmd(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0)
             self.armed = True
@@ -102,7 +102,7 @@ class PX4Offboard(Node):
             self.vx = self.vy = self.vz = self.yawspeed = 0.0
             self.get_logger().info("DISARMED")
 
-    # -------------------- Helpers --------------------
+   
     def micros(self):
         return int(self.get_clock().now().nanoseconds / 1000)
 
@@ -123,7 +123,7 @@ class PX4Offboard(Node):
         msg.velocity = [vx, vy, vz]
         msg.acceleration = [float('nan')] * 3
         msg.jerk = [float('nan')] * 3
-        msg.yaw = float('nan')  # We're using yawspeed, not absolute yaw
+        msg.yaw = float('nan')  # yaw speed
         msg.yawspeed = yawspeed
         self.setpoint_pub.publish(msg)
 
@@ -140,7 +140,7 @@ class PX4Offboard(Node):
             setattr(m, k, params.get(k, 0.0))
         self.cmd_pub.publish(m)
 
-    # -------------------- Sequence Control --------------------
+    
     def start_offboard(self):
         """Send dummy setpoints before activating OFFBOARD."""
         if self.warmed_up:
@@ -157,26 +157,26 @@ class PX4Offboard(Node):
         time.sleep(0.2)
         self.get_logger().info("Offboard mode ready!")
 
-    # -------------------- Main Loop --------------------
+    
     def loop(self):
         now = time.time()
         self.publish_mode()
 
-        # Check if PX4 reports Offboard mode
+        # reports offboard mode
         if self.status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
             self.offboard_active = True
 
-        # If not yet Offboard or not armed, hold still
+        # if not armed or offboard will hold still and no change 
         if not self.offboard_active or not self.armed:
             self.publish_setpoint(0.0, 0.0, 0.0, 0.0)
             return
 
-        # Inactivity safety timeout - hover if no commands
+        # will hover 
         if (now - self.last_cmd_time) > INACTIVITY_TIMEOUT:
             self.get_logger().warn("No teleop input - entering hover failsafe...", throttle_duration_sec=2.0)
             self.vx = self.vy = self.vz = self.yawspeed = 0.0
 
-        # Rotate body frame (FLU) → world frame (NED coordinate system)
+        # flu
         cy, sy = math.cos(self.yaw), math.sin(self.yaw)
         wx = self.vx * cy - self.vy * sy
         wy = self.vx * sy + self.vy * cy

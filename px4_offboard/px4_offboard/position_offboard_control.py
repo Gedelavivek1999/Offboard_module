@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rclpy
+from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand, VehicleLocalPosition, VehicleStatus
@@ -12,7 +13,7 @@ class OffboardControl(Node):
     def __init__(self) -> None:
         super().__init__('offboard_control_takeoff_and_land')
 
-        # Configure QoS profile for publishing and subscribing
+        # qos we require
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
@@ -20,7 +21,7 @@ class OffboardControl(Node):
             depth=1
         )
 
-        # Create publishers
+        # publishers
         self.offboard_control_mode_publisher = self.create_publisher(
             OffboardControlMode, '/fmu/in/offboard_control_mode', qos_profile)
         self.trajectory_setpoint_publisher = self.create_publisher(
@@ -28,20 +29,29 @@ class OffboardControl(Node):
         self.vehicle_command_publisher = self.create_publisher(
             VehicleCommand, '/fmu/in/vehicle_command', qos_profile)
 
-        # Create subscribers
+        # subscribers
         self.vehicle_local_position_subscriber = self.create_subscription(
             VehicleLocalPosition, '/fmu/out/vehicle_local_position_v1', self.vehicle_local_position_callback, qos_profile)
         self.vehicle_status_subscriber = self.create_subscription(
             VehicleStatus, '/fmu/out/vehicle_status_v1', self.vehicle_status_callback, qos_profile)
+        
+        # connect keyboard
+        self.cmd_vel_subscription = self.create_subscription(
+            Twist,
+            '/cmd_vel',
+            self.cmd_vel_callback,
+            10
+        )
+        
 
-        # Initialize variables
+        # init variables - goes to 5 m top and comes back as -5 is top direction 
         self.offboard_setpoint_counter = 0
         self.vehicle_local_position = VehicleLocalPosition()
         self.vehicle_status = VehicleStatus()
         self.takeoff_height = -5.0 #NED
 
-        # Create a timer to publish control commands
-        self.timer = self.create_timer(0.1, self.timer_callback) #10Hz
+        # timer 10hz
+        self.timer = self.create_timer(0.1, self.timer_callback) 
 
     def vehicle_local_position_callback(self, vehicle_local_position):
         """Callback function for vehicle_local_position topic subscriber."""
