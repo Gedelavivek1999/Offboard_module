@@ -1,3 +1,4 @@
+
 **Deterministic control loop with RT Watchdog Mechanism**
 
 Issue: If the Flight controller(Pixhawk) goes offboard mode/manually controlled it requires continuous heartbeat Tx sig to Flight controller if not it could drift away or crash land, before the flight controller takes charge
