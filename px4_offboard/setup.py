@@ -31,6 +31,7 @@ setup(
             'position_offboard_control.py = px4_offboard.position_offboard_control:main',  #offboard_module
             'keyboard.py = px4_offboard.teleop_keyboard:main',       #keyboard one
             'velocity_offboard_control.py = px4_offboard.velocity_offboard_control:main',   #Trajectory
+            'watchdog_mechanism = px4_offboard.watchdog_mechanism:main', # watchdog
             
             
         ],
